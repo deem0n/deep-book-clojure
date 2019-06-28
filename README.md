@@ -16,9 +16,47 @@ FIXME: explanation
 
     $ java -jar deep-book-clojure-0.1.0-standalone.jar [args]
 
-## Options
+## Code comparasion
 
-FIXME: listing of options this app accepts.
+<table>
+    <tr>
+        <th>Python</th>
+        <th>Clojure</th>
+    </tr>
+<tr>
+<td>
+
+  ```python
+class Network(object):
+
+    def __init__(self, sizes):
+        self.num_layers = len(sizes)
+        self.sizes = sizes
+        self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
+        self.weights = [np.random.randn(y, x) 
+                        for x, y in zip(sizes[:-1], sizes[1:])]
+  ```
+</td>
+<td>
+
+  ```clojure
+(defrecord Network [^java.lang.Long num_layers
+                    ^clojure.lang.PersistentVector sizes
+                    ^clojure.lang.LazySeq biases
+                    ^clojure.lang.LazySeq weights])
+
+;Constructor
+(defn make-network ([sizes]
+                    (->Network
+                     (count sizes)
+                     sizes
+                     (map #(random/normal 0 1 [% 1]) (subvec sizes 1))
+                     (map #(random/normal 0 1 [%2 %1]) (butlast sizes) (subvec sizes 1)))))
+
+  ```
+</td>
+</tr>
+</table>
 
 ## Examples
 
