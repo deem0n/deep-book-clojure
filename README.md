@@ -4,17 +4,20 @@
 
 ## Installation
 
+Note, that you will need to download and unzip MNIST images into the `data` directory. Use script from the MXNet project which I put into [utils/get_mnist_data.sh](utils/get_mnist_data.sh), it should do the right thing. The data files are about 50Mb in size, so I did'nt commit them to github.
+
 ```
 git clone https://github.com/deem0n/deep-book-clojure.git
-lein test
-lein run
+cd deep-book-clojure
+utils/get_mnist_data.sh
 ```
 
 ## Usage
 
-FIXME: explanation
-
-    $ java -jar deep-book-clojure-0.1.0-standalone.jar [args]
+```
+lein test
+lein run
+```
 
 ## Code comparasion
 
@@ -57,18 +60,6 @@ class Network(object):
 </td>
 </tr>
 </table>
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 

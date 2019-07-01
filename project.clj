@@ -10,12 +10,15 @@
       ]
 
 (defproject deep-book "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
-  :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
-            :url "https://www.eclipse.org/legal/epl-2.0/"}
+  :description "MXNet Clojure version of the code for the 'Neural Networks and Deep Learning' free book"
+  :url "https://github.com/deem0n/deep-book-clojure"
+  :license {:name "MIT"
+            :url "https://github.com/deem0n/deep-book-clojure/blob/master/LICENSE"}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  ~mxnet]
   :main ^:skip-aot deep-book.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}))
+
+
+; java -jar deep-book-clojure-0.1.0-standalone.jar [args]
