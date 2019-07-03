@@ -34,19 +34,18 @@
       (is (instance? clojure.lang.PersistentVector (first (nth array3 0))))
       (is (instance? org.apache.mxnet.NDArray  (first (first (nth array3 0)))))
       (is (instance? org.apache.mxnet.NDArray  (second (first (nth array3 0)))))
-      (is (= [1 784] (ndarray/shape-vec (first (first (nth array3 0))))))
+      (is (= [784 1] (ndarray/shape-vec (first (first (nth array3 0))))))
       (is (= [10 1] (ndarray/shape-vec (second (first (nth array3 0))))))
       
       
       (is (instance? org.apache.mxnet.NDArray  (first (first (nth array3 1)))))
       (is (instance? org.apache.mxnet.NDArray  (second (first (nth array3 1)))))
-      (is (= [1 784] (ndarray/shape-vec (first (first (nth array3 1))))))
+      (is (= [784 1] (ndarray/shape-vec (first (first (nth array3 1))))))
       (is (= [10 1] (ndarray/shape-vec (second (first (nth array3 1))))))  
       
       (is (instance? org.apache.mxnet.NDArray  (first (first (nth array3 2)))))
-      (is (instance? org.apache.mxnet.NDArray  (second (first (nth array3 2)))))
-      (is (= [1 784] (ndarray/shape-vec (first (first (nth array3 2))))))
-      (is (= [10 1] (ndarray/shape-vec (second (first (nth array3 2))))))      
+      (is (instance? java.lang.Integer        (second (first (nth array3 2))))) 
+      (is (= [784 1] (ndarray/shape-vec (first (first (nth array3 2))))))
+      (is (> 11 (second (first (nth array3 2)))))
       )))
-
 

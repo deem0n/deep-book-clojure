@@ -35,6 +35,7 @@
 ;(ndarray/shape-vec (first (mx-io/batch-label (mx-io/next train-data))) )
 ;clojure.lang.PersistentVector
 
+(comment
 (let [data (ndarray/array [2 1 0 -1 -2   3 4 5 6 7 ] [2 5])
       s (ndarray/slice-axis data 1 0 1)
       shape (ndarray/shape-vec s)
@@ -43,11 +44,12 @@
   (println shape)
   (map #(ndarray/->vec (first (mx-io/batch-data %))) (mx-io/batches (mx-io/ndarray-iter [data])))
   )
-
+)
    "Return a 10-dimensional unit vector with a 1.0 in the jth
     position and zeroes elsewhere.  This is used to convert a digit
     (0...9) into a corresponding desired output from the neural
     network."
+
 (defn vectorized-result 
   ([j]
    (ndarray/array (assoc (vec (replicate 10 0)) j 1) [10 1])
@@ -55,13 +57,24 @@
 
 (defn batch-to-tuples
   "converts batch to seq of tuples [a,b]. 
+where a is ndarray with data, b is vectorized value from corresponding label.
+Data is NDArray and has shape [10000 784], so we should iterate correctly over it"
+  ([batch]
+   (let [data-nda (first (mx-io/batch-data batch))
+         labels-nda (first (mx-io/batch-label batch))
+         data (map #(first (mx-io/batch-data %)) (mx-io/batches (mx-io/ndarray-iter [data-nda])))]
+     (map (fn [d l] [(ndarray/transpose d) (vectorized-result (int l))]) data (ndarray/->vec labels-nda)))))
+
+(defn batch-to-tuples-values
+  "converts batch to seq of tuples [a,b]. 
 where a is ndarray with data, b is value from corresponding label.
 Data is NDArray and has shape [10000 784], so we should iterate correctly over it"
   ([batch]
    (let [data-nda (first (mx-io/batch-data batch))
          labels-nda (first (mx-io/batch-label batch))
          data (map #(first (mx-io/batch-data %)) (mx-io/batches (mx-io/ndarray-iter [data-nda])))]
-     (map (fn [d l] [d (vectorized-result (int l))]) data (ndarray/->vec labels-nda)))))
+     (map (fn [d l] [(ndarray/transpose d) (int l)]) data (ndarray/->vec labels-nda)))))
+
 
 
     "Return a tuple containing ``(training_data, validation_data,
@@ -92,13 +105,15 @@ Data is NDArray and has shape [10000 784], so we should iterate correctly over i
          train-and-val (partition-all 5 (map batch-to-tuples train-batches))
          ]
 
-       [ (into [] (apply concat(first train-and-val))) ; train 50,000
+       [ (into [] (apply concat (first train-and-val))) ; train 50,000
         (first (second train-and-val)) ; validation 10,000
-        (into [] (apply concat (map batch-to-tuples test-batches))) ; test 10,000
+        (into [] (apply concat (map batch-to-tuples-values test-batches))) ; test 10,000
         ]
 
      )))
 
+
+; (instance? clojure.lang.PersistentVector  (load-data-wrapper))
  ; (take 1 (take 1 (second (load-data-wrapper))))
 
  ; (take 1 (nth (load-data-wrapper) 0))

@@ -18,7 +18,12 @@
                  ~mxnet]
   :main ^:skip-aot deep-book.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}}))
+  :profiles {:uberjar {:aot :all}}
+  :jvm-opts ["-Xmx2g" "-server" "-XX:+UseConcMarkSweepGC" 
+                                "-XX:+UseCompressedOops"
+                                "-XX:+DoEscapeAnalysis"
+                                "-XX:+UseBiasedLocking"] 
+))
 
 
 ; java -jar deep-book-clojure-0.1.0-standalone.jar [args]
