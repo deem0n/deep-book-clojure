@@ -182,9 +182,9 @@
 (defn update-mini-batch 
   ([^Network n mini_batch eta]
    (let [eta_by_minibatch_cnt (float (/ eta (count mini_batch)))
-         calc (fn [w nw] (let [ m (ndarray/div nw (/ 1.0 eta_by_minibatch_cnt))
-                                ;m (ndarray/* nw  eta_by_minibatch_cnt); this one will result in zero matrix !!!
-                                ;_ (println "INTERMEDIATE"  (ndarray/to-scalar (ndarray/max nw)) "*" eta_by_minibatch_cnt "=" (ndarray/to-scalar (ndarray/max m)))
+         calc (fn [w nw] (let [ ;m (ndarray/div nw (/ 1.0 eta_by_minibatch_cnt))
+                                m (ndarray/* nw  eta_by_minibatch_cnt); this one will result in zero matrix !!!
+                                _ (println "INTERMEDIATE"  (ndarray/to-scalar (ndarray/max nw)) "*" eta_by_minibatch_cnt "=" (ndarray/to-scalar (ndarray/max m)))
                                 res (ndarray/- w m)]
                           res))
          nabla_b (copy0 (:biases n)) ; [ndarray nfarray ndarray]
@@ -200,7 +200,7 @@
          ] 
        new_net))
   ([^Network n mini_batch eta debug-idx total]
-(let [cnt (count mini_batch)]
+   (let [cnt (count mini_batch)]
    (do (if (= (rem (* cnt debug-idx) 1000) 0)
                                          (do (print (* debug-idx cnt))
                                         (print "/")
@@ -240,7 +240,7 @@
        (let [mini_batches (partition-all mini_batch_size (shuffle training_data))
              _ (println "Mini batches: " (count mini_batches))
              [_ n] (reduce (fn [[idx n2] batch] [(+ 1 idx) (update-mini-batch n2 batch eta idx training_cnt)])
-                                 [1 n1] (take 100 mini_batches))]
+                                 [1 n1] (take 10 mini_batches))]
            (println)         
            (if (> n_test 0)
            (do 
@@ -263,7 +263,7 @@
         train-data (nth all-data 0)
         test-data (nth all-data 2)
         ]
-    (SGD net train-data 3 10 3.0 (take 1000 test-data))
+    (SGD net train-data 1 10 3.0 (take 1000 test-data))
     ))
 
 ;(-main)
