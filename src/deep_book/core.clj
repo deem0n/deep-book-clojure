@@ -263,7 +263,7 @@
         train-data (nth all-data 0)
         test-data (nth all-data 2)
         ]
-    (SGD net train-data 3 10 3.0 (take 1000 test-data))
+    (SGD net train-data 8 10 3.0 (take 1000 test-data))
     ))
 
 ;(-main)
