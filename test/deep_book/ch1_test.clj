@@ -1,8 +1,8 @@
-(ns deep-book.core-test
+(ns deep-book.ch1-test
   (:require [org.apache.clojure-mxnet.ndarray :as ndarray])
   (:require [org.apache.clojure-mxnet.random :as random])
   (:require [clojure.test :refer :all]
-            [deep-book.core :refer :all]))
+            [deep-book.ch1 :refer :all]))
 
 (deftest network-feedforward-test
   (let [out-layer-neuron-count 1024000
