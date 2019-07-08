@@ -240,13 +240,13 @@
                         :weights (mapv calc (:weights n) r_w)
                         :biases (mapv calc (:biases n) r_b))]
      new_net))
-  ([^Network n mini_batch eta debug-idx total]
+  ([^Network n mini_batch eta debug-idx total epoch]
    (let [cnt (count mini_batch)]
      (do (if (= (rem (* cnt debug-idx) 1000) 0)
            (do (print (* debug-idx cnt))
                (print "/")
                (print total)
-               (log-metric n (format "Epoch%d" debug-idx) (* debug-idx cnt)))
+               (log-metric n (format "Epoch%d" epoch) (* debug-idx cnt)))
            (print "."))
          (flush)
          (update-mini-batch n mini_batch eta)))))
@@ -281,7 +281,7 @@
      (reduce (fn [n1 j]
        (let [mini_batches (partition-all mini_batch_size (shuffle training_data))
              ;_ (println "Mini batches: " (count mini_batches))
-             [_ n] (reduce (fn [[idx n2] batch] [(+ 1 idx) (update-mini-batch n2 batch eta idx training_cnt)])
+             [_ n] (reduce (fn [[idx n2] batch] [(+ 1 idx) (update-mini-batch n2 batch eta idx training_cnt j)])
                                  [1 n1] mini_batches)]; you can (take 100 mini_batches)
            (println)         
            (if (> n_test 0)
