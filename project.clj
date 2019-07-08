@@ -5,7 +5,8 @@
       ; https://stackoverflow.com/questions/4688336/what-is-an-elegant-way-to-set-up-a-leiningen-project-that-requires-different-dep
       mxnet (case platform
               "Mac OS X" '[org.apache.mxnet.contrib.clojure/clojure-mxnet-osx-cpu "1.4.1"]
-              '[org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu "1.4.1"])
+              '[org.apache.mxnet.contrib.clojure/clojure-mxnet "1.4.1-SNAPSHOT"]) ; this one is from local .m2 repository
+              ;'[org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu "1.4.1"]) ; this one form the remote repo
       ; _ (println (str platform mxnet))
       ]
 
