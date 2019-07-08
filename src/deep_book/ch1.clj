@@ -52,7 +52,9 @@
               :experiment-id experiment-id
               :run-info run-info
               :run-id run-id))
-     (println "No mlflow URL provided. Logging disabled."))))
+     (do 
+       (println "No mlflow URL provided. Logging disabled.")
+       net))))
 
 ;(def n (prepare-experiment (make-network [1923 256 10]) "MXNet DeepBook Clojure implementation"))
 ;(log-param n "test" "del me")
