@@ -221,35 +221,35 @@
 (map (fn [a] (ndarray/to-scalar (ndarray/max a))) l)))
 
 ; NOTE: returns NEW network with updated weights and biases !!!
-(defn update-mini-batch 
+(defn update-mini-batch
   ([^Network n mini_batch eta]
    (let [eta_by_minibatch_cnt (float (/ eta (count mini_batch)))
-         calc (fn [w nw] (let [ m (ndarray/div nw (/ 1.0 eta_by_minibatch_cnt))
+         calc (fn [w nw] (let [m (ndarray/div nw (/ 1.0 eta_by_minibatch_cnt))
                                 ;m (ndarray/* nw  eta_by_minibatch_cnt); this one will result in zero matrix !!!
                                 ;_ (println "INTERMEDIATE"  (ndarray/to-scalar (ndarray/max nw)) "*" eta_by_minibatch_cnt "=" (ndarray/to-scalar (ndarray/max m)))
-                                res (ndarray/- w m)]
-                          res))
+                               res (ndarray/- w m)]
+                           res))
          nabla_b (copy0 (:biases n)) ; [ndarray nfarray ndarray]
          nabla_w (copy0 (:weights n)); [ndarray nfarray ndarray]
-         [r_b r_w] (reduce (fn [[b w] [x y]] 
-                             (let [[delta_nabla_b delta_nabla_w] (backprop n x y)] 
+         [r_b r_w] (reduce (fn [[b w] [x y]]
+                             (let [[delta_nabla_b delta_nabla_w] (backprop n x y)]
                                [(map ndarray/+ b delta_nabla_b) (map ndarray/+ w delta_nabla_w)]))
                            [nabla_b nabla_w]
                            mini_batch) ; [[ndarray ndarray] [ndarray ndarray]]
-         new_net (assoc n 
-                        :weights (mapv calc (:weights n) r_w) 
-                        :biases (mapv calc (:biases n) r_b))
-         ] 
-       new_net))
+         new_net (assoc n
+                        :weights (mapv calc (:weights n) r_w)
+                        :biases (mapv calc (:biases n) r_b))]
+     new_net))
   ([^Network n mini_batch eta debug-idx total]
-(let [cnt (count mini_batch)]
-   (do (if (= (rem (* cnt debug-idx) 1000) 0)
-                                         (do (print (* debug-idx cnt))
-                                        (print "/")
-                                        (print total))
-                                         (print "."))
-       (flush)
-       (update-mini-batch n mini_batch eta)))))
+   (let [cnt (count mini_batch)]
+     (do (if (= (rem (* cnt debug-idx) 1000) 0)
+           (do (print (* debug-idx cnt))
+               (print "/")
+               (print total)
+               (log-metric n (format "Epoch%d" debug-idx) (* debug-idx cnt)))
+           (print "."))
+         (flush)
+         (update-mini-batch n mini_batch eta)))))
 
 
 ;(ndarray/->vec (ndarray/* (sigmoid (ndarray/ones [2 2])) 2.0))
