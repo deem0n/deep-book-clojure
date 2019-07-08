@@ -16,6 +16,7 @@
             :url "https://github.com/deem0n/deep-book-clojure/blob/master/LICENSE"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/tools.cli "0.4.2"]
+                 [org.mlflow/mlflow-client "1.0.0"]
                  ~mxnet]
   :main ^:skip-aot deep-book.core
   :target-path "target/%s"

@@ -12,6 +12,9 @@
     :default 1
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 2) "Must be 1"]]
+   ["-l" "--mlflow URL" "tracking server’s URI"
+    :default (System/getenv "MLFLOW_TRACKING_URI")
+    :validate [#(> (count %) 5 ) "Must be full URL string"]]
    ["-e" "--epochs NUM" "Number of Epochs"
     :default 30
     :parse-fn #(Integer/parseInt %)

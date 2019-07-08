@@ -3,7 +3,8 @@
   (:require [org.apache.clojure-mxnet.ndarray :as ndarray])
   (:require [org.apache.clojure-mxnet.random :as random])
   (:require [org.apache.clojure-mxnet.io :as mx-io])
-  (:require [deep-book.mnist-loader :refer :all]))
+  (:require [deep-book.mnist-loader :refer :all])
+  (:require [deep-book.mlflow :refer :all]))
 
 
 ; how to debug https://cambium.consulting/articles/2018/2/8/the-power-of-clojure-debugging
@@ -14,20 +15,55 @@
 (defrecord Network [^java.lang.Long num_layers
                     ^clojure.lang.PersistentVector sizes ; number of neurons in the respective layers
                     ^clojure.lang.LazySeq biases
-                    ^clojure.lang.LazySeq weights])
+                    ^clojure.lang.LazySeq weights
+                    ^org.mlflow.tracking.MlflowClient mlflow
+                    ^String experiment-title
+                    experiment-id
+                    ^org.mlflow.api.proto.Service$RunInfo run-info
+                    run-id])
 ;The biases and weights in the Network object are all initialized randomly, using the Numpy np.random.randn function to generate Gaussian distributions with mean 0 and standard deviation 1.
 
 ;Constructor
-(defn make-network ([sizes]
+(defn make-network ([sizes mlflow-tracking-url]
                     (->Network
                      (count sizes)
                      sizes
                      (map #(random/normal 0 1 [% 1]) (subvec sizes 1))
-                     (map #(random/normal 0 1 [%2 %1]) (butlast sizes) (subvec sizes 1)))))
+                     (map #(random/normal 0 1 [%2 %1]) (butlast sizes) (subvec sizes 1))
+                     (if mlflow-tracking-url
+                       (new org.mlflow.tracking.MlflowClient mlflow-tracking-url)
+                       nil)
+                     nil
+                     nil
+                     nil
+                     nil)))
 
 ;(make-network [1923 256 10])
 
+(defn prepare-experiment
+  ([^Network net experiment-title]
+   (if (:mlflow net)
+     (let [experiment-id (deep-book.mlflow/get-experiment-id (:mlflow net) experiment-title)
+           run-info (.. (:mlflow net) (createRun experiment-id))
+           run-id   (.. run-info (getRunId))
+           ]
+       (assoc net 
+              :experiment-title experiment-title 
+              :experiment-id experiment-id
+              :run-info run-info
+              :run-id run-id))
+     (println "No mlflow URL provided. Logging disabled."))))
 
+;(def n (prepare-experiment (make-network [1923 256 10]) "MXNet DeepBook Clojure implementation"))
+;(log-param n "test" "del me")
+
+;(.deleteExperiment (:mlflow n) "4")
+
+(defn log-param
+  ([net param-name param-val]
+   (if (:run-id net)
+     (.logParam (:mlflow net) (:run-id net) param-name (str param-val))
+     (println "No Run ID provided."))))
 
 ; I have no idea how to divide 1 by ndarray element-wise :-()
 ; ndarray/elemwise-div and ndarray/div both can not accept numbers as arguments
@@ -251,18 +287,28 @@
          ))
       net (range epochs)))))
 
+; (get-experiment-id (make-network [784 30 10]) "DEL ME")
+
 
 (defn run-net
   "First chapter of the book"
-  [& [{epochs :epochs}]]
+  [& [{epochs :epochs 
+       mlflow-tracking-url :mlflow}]]
   (println "Training with code from Chapter 1")
   (println "Epochs: " epochs)
 
-  (let [net (make-network [784 30 10])
+  (let [net (make-network [784 30 10] mlflow-tracking-url)
+        net (prepare-experiment net "MXNet DeepBook Clojure implementation")
         all-data (load-data-wrapper)
         train-data (nth all-data 0)
         test-data (nth all-data 2)
+        mini-batch-size 10
+        eta 3.0
         ]
-    (SGD net train-data epochs 10 3.0 (take 1000 test-data))
-    ))
+    (do
+      (log-param net "Epochs" epochs)
+      (log-param net "Mini Batch Size" mini-batch-size)
+      (log-param net "Learning speed" eta)
+      (SGD net train-data epochs mini-batch-size eta (take 1000 test-data))
+      )))
 
