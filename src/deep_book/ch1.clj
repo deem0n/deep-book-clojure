@@ -64,8 +64,13 @@
 (defn log-param
   ([net param-name param-val]
    (if (:run-id net)
-     (.logParam (:mlflow net) (:run-id net) param-name (str param-val))
-     (println "No Run ID provided."))))
+     (.logParam (:mlflow net) (:run-id net) param-name (str param-val)))))
+
+
+(defn log-metric
+  ([net metric-name metric-val]
+   (if (:run-id net)
+     (.logMetric (:mlflow net) (:run-id net) metric-name metric-val))))
 
 ; I have no idea how to divide 1 by ndarray element-wise :-()
 ; ndarray/elemwise-div and ndarray/div both can not accept numbers as arguments
@@ -275,15 +280,17 @@
         training_cnt (count training_data)]
      (reduce (fn [n1 j]
        (let [mini_batches (partition-all mini_batch_size (shuffle training_data))
-             _ (println "Mini batches: " (count mini_batches))
+             ;_ (println "Mini batches: " (count mini_batches))
              [_ n] (reduce (fn [[idx n2] batch] [(+ 1 idx) (update-mini-batch n2 batch eta idx training_cnt)])
-                                 [1 n1] (take 100 mini_batches))]
+                                 [1 n1] mini_batches)]; you can (take 100 mini_batches)
            (println)         
            (if (> n_test 0)
-           (do 
-              (printf "Epoch %d: %s / %d\n" j (evaluate-network n test_data) n_test )
+           (let [prec (evaluate-network n test_data)]
+             (do
+             (printf "Epoch %d: %s / %d\n" j prec n_test )
+             (log-metric net "Precision" (* 100.0 (/ prec n_test)))
               ;(clojure.pprint/pprint (take 10 (ndarray/->vec (first (:biases n)))))
-           )
+             ))
            (printf "Epoch %d complete\n" j))
            n
          ))
@@ -311,6 +318,6 @@
       (log-param net "Epochs" epochs)
       (log-param net "Mini Batch Size" mini-batch-size)
       (log-param net "Learning speed" eta)
-      (SGD net train-data epochs mini-batch-size eta (take 1000 test-data))
+      (SGD net train-data epochs mini-batch-size eta test-data); you can (take 1000 test-data)
       )))
 
