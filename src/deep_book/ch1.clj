@@ -4,6 +4,7 @@
   (:require [org.apache.clojure-mxnet.random :as random])
   (:require [org.apache.clojure-mxnet.io :as mx-io])
   (:require [deep-book.mnist-loader :refer :all])
+  (:require [clj-async-profiler.core :as prof])
   (:require [deep-book.mlflow :refer :all]))
 
 
@@ -70,7 +71,8 @@
 (defn log-metric
   ([net metric-name metric-val]
    (if (:run-id net)
-     (.logMetric (:mlflow net) (:run-id net) metric-name metric-val))))
+     (.logMetric (:mlflow net) (:run-id net) metric-name metric-val))
+   (println metric-name metric-val)))
 
 ; I have no idea how to divide 1 by ndarray element-wise :-()
 ; ndarray/elemwise-div and ndarray/div both can not accept numbers as arguments
@@ -214,6 +216,9 @@
 ;(ndarray/->vec (ndarray/dot (ndarray/array [0.01 0.02 0.03 0.045 0.05 0.06][2 3]) 
 ;(ndarray/array [0.0003 0.0003 0.0003 0.0003 0.0003 0.0003] [2 3])))
 
+; to calculate time spend in update-mini-batch
+(def moment (atom (. System (currentTimeMillis))))
+
 
 (defn layers-det 
 "For a list of ndarrays returns max() for each array"
@@ -246,7 +251,9 @@
            (do (print (* debug-idx cnt))
                (print "/")
                (print total)
-               (log-metric n (format "Epoch%d" epoch) (* debug-idx cnt)))
+               (log-metric n (format "Epoch%d" epoch) (* debug-idx cnt))
+               (log-metric n (format "Epoch-time%d" epoch) (/ (- (. System (currentTimeMillis)) @moment ) 1000.0))
+               (reset! moment (. System (currentTimeMillis))))
            (print "."))
          (flush)
          (update-mini-batch n mini_batch eta)))))
@@ -277,7 +284,8 @@
   
   ([^Network net training_data epochs mini_batch_size eta test_data]
    (let [n_test (count test_data)
-        training_cnt (count training_data)]
+         training_cnt (count training_data)
+         _ (reset! moment (. System (currentTimeMillis)))] ; reset timestamp
      (reduce (fn [n1 j]
        (let [mini_batches (partition-all mini_batch_size (shuffle training_data))
              ;_ (println "Mini batches: " (count mini_batches))
@@ -302,7 +310,10 @@
 (defn run-net
   "First chapter of the book"
   [& [{epochs :epochs 
-       mlflow-tracking-url :mlflow}]]
+       mlflow-tracking-url :mlflow
+       eval-cnt :eval-cnt
+       train-cnt :train-cnt
+       profile :profile}]]
   (println "Training with code from Chapter 1")
   (println "Epochs: " epochs)
 
@@ -314,10 +325,13 @@
         mini-batch-size 10
         eta 3.0
         ]
-    (do
-      (log-param net "Epochs" epochs)
-      (log-param net "Mini Batch Size" mini-batch-size)
-      (log-param net "Learning speed" eta)
-      (SGD net train-data epochs mini-batch-size eta test-data); you can (take 1000 test-data)
-      )))
+    (letfn [(exec [] 
+                  (SGD net (take train-cnt train-data) epochs mini-batch-size eta (take eval-cnt test-data)))]
+      (do
+        (log-param net "Epochs" epochs)
+        (log-param net "Mini Batch Size" mini-batch-size)
+        (log-param net "Learning speed" eta)
+        (if profile
+          (prof/profile (exec))
+          (exec))))))
 

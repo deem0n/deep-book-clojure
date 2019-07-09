@@ -18,14 +18,28 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/tools.cli "0.4.2"]
                  [org.mlflow/mlflow-client "1.0.0"]
+                 [com.clojure-goes-fast/clj-async-profiler "0.4.0"]
                  ~mxnet]
   :main ^:skip-aot deep-book.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
-  :jvm-opts ["-Xmx2g" "-server" "-XX:+UseConcMarkSweepGC" 
-                                "-XX:+UseCompressedOops"
-                                "-XX:+DoEscapeAnalysis"
-                                "-XX:+UseBiasedLocking"] 
+  :jvm-opts ["-Xmx4g" "-server"
+            ; "-XX:+UseConcMarkSweepGC" ; 72.65
+             "-XX:+UseCompressedOops"
+             "-XX:+DoEscapeAnalysis"
+             "-XX:+AlwaysPreTouch"
+             ;"-XX:+EliminateLocks"
+             ; bad "-XX:+UseG1GC" ; 83
+             
+             "-XX:+UseSerialGC" ; 64
+             ;"-XX:+AggressiveOpts" ; deprecated in JDK 11
+             ;"-XX:+UseParallelGC" ; 81
+             ;"-XX:+UseParNewGC" ; 67.7
+             
+             "-XX:+ScavengeBeforeFullGC"
+             "-XX:+DisableExplicitGC"
+             "-XX:+UseBiasedLocking"
+             ] 
 ))
 
 

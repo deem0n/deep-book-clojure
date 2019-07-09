@@ -14,7 +14,16 @@
     :validate [#(< 0 % 2) "Must be 1"]]
    ["-l" "--mlflow URL" "tracking server’s URI"
     :default (System/getenv "MLFLOW_TRACKING_URI")
-    :validate [#(> (count %) 5 ) "Must be full URL string"]]
+    :validate [#(> (count %) 5) "Must be full URL string"]]
+   ["-p" "--profile" "profile execution with clj-async-profiler. Check /tmp/clj-async-profiler/results/"]
+   [nil "--eval-cnt NUM" "Number of test images to evaluate"
+    :default 10000
+    :parse-fn #(Integer/parseInt %)
+    :validate [#(< 0 % 10001) "Must be between 0 and 10000"]]
+   [nil "--train-cnt NUM" "Number of train images to evaluate"
+    :default 50000
+    :parse-fn #(Integer/parseInt %)
+    :validate [#(< 0 % 50001) "Must be between 0 and 50000"]]
    ["-e" "--epochs NUM" "Number of Epochs"
     :default 30
     :parse-fn #(Integer/parseInt %)
